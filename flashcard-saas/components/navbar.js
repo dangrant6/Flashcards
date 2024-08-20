@@ -35,14 +35,14 @@ const Navbar = () => {
               color: theme.palette.text.primary,
             }}
           >
-            FlashMaster
+            Memora
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button color="inherit" component={Link} href="/" sx={{ color: theme.palette.text.primary }}>
               Home
             </Button>
             <Button color="inherit" component={Link} href="/generate" sx={{ color: theme.palette.text.primary }}>
-              Generate Flashcards
+              Make Flashcards
             </Button>
             <Button color="inherit" component={Link} href="/flashcards" sx={{ color: theme.palette.text.primary }}>
               My Flashcards

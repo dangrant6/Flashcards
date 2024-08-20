@@ -117,7 +117,7 @@ export default function HomePage() {
                   color: theme.palette.text.primary,
                 }}
               >
-                FlashMaster
+                Memora
               </Typography>
               <IconButton 
                 sx={{ 
@@ -160,7 +160,7 @@ export default function HomePage() {
         <Container maxWidth="lg" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', py: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant={isMobile ? 'h4' : 'h3'} component="h1" gutterBottom fontWeight="bold" color="text.primary">
-              Master Any Subject with FlashMaster
+              Master Any Subject with Memora
             </Typography>
             <Typography variant="h6" component="h2" gutterBottom color="text.secondary">
               AI-powered flashcards for effortless learning

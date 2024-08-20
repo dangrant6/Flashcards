@@ -31,26 +31,44 @@ export function CustomThemeProvider({ children }) {
             main: '#9C89B8', // Lighter purple
           },
           background: {
-            default: mode === 'light' ? '#FFFAF0' : '#121212', // Creamy white for light mode
-            paper: mode === 'light' ? '#FFF8E1' : '#1e1e1e',
+            default: mode === 'light' ? '#F5F5F5' : '#121212', // Light gray for light mode
+            paper: mode === 'light' ? '#FFFFFF' : '#1E1E1E',
           },
           text: {
-            primary: mode === 'light' ? '#333333' : '#ffffff',
-            secondary: mode === 'light' ? '#555555' : '#aaaaaa',
+            primary: mode === 'light' ? '#333333' : '#FFFFFF',
+            secondary: mode === 'light' ? '#555555' : '#AAAAAA',
           },
         },
         components: {
-          MuiContainer: {
-            styleOverrides: {
-              root: {
-                backgroundColor: 'transparent', // Override the default Container background
-              },
-            },
-          },
           MuiCssBaseline: {
             styleOverrides: {
               body: {
-                backgroundColor: mode === 'light' ? '#FFFAF0' : '#121212', // Set the body background color
+                backgroundColor: mode === 'light' ? '#F5F5F5' : '#121212',
+                backgroundImage: 'none', // Explicitly remove any background image
+              },
+            },
+          },
+          MuiContainer: {
+            styleOverrides: {
+              root: {
+                backgroundColor: 'transparent', // Ensure container doesn't add its own background
+              },
+            },
+          },
+          MuiCard: {
+            styleOverrides: {
+              root: {
+                backgroundColor: mode === 'light' ? '#FFFFFF' : '#1E1E1E',
+                boxShadow: mode === 'light' 
+                  ? '0 2px 4px rgba(0,0,0,0.1)' 
+                  : '0 2px 4px rgba(255,255,255,0.1)',
+              },
+            },
+          },
+          MuiButton: {
+            styleOverrides: {
+              root: {
+                textTransform: 'none',
               },
             },
           },

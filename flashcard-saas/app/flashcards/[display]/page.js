@@ -84,6 +84,10 @@ export default function FlashcardSet() {
     setEditDialogOpen(false);
   };
 
+  const handleStudyClick = () => {
+    router.push(`/study/${encodeURIComponent(params.display)}`);
+  };
+
   return (
     <>
       <Navbar />
@@ -95,6 +99,14 @@ export default function FlashcardSet() {
           <Typography variant="h4" component="h1" gutterBottom align="center">
             {params.display ? decodeURIComponent(params.display) : 'Loading...'}
           </Typography>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleStudyClick}
+            sx={{ mt: 2, display: 'block', margin: '0 auto' }}
+          >
+            Study this Set
+          </Button>
         </Box>
         {flashcards.length > 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

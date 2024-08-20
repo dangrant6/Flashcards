@@ -6,37 +6,31 @@ import {
   ThemeProvider, createTheme, CssBaseline,
   Container, TextField, Button, Typography, Box, Grid, Card, CardContent,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
-  useMediaQuery, IconButton
+  useMediaQuery, IconButton, Paper, Divider, CircularProgress
 } from '@mui/material';
 import { useUser } from '@clerk/nextjs';
 import { collection, doc, writeBatch, getDoc, setDoc } from 'firebase/firestore';
 import db from '../../firebase';
 import Navbar from '../../components/navbar';
-import { Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon } from '@mui/icons-material';
+import { Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon, Add as AddIcon } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useTheme as useCustomTheme } from '../ThemeContext';
 import { initializeFlashcard } from '../../utils/flashcardSchema';
+import axios from 'axios';
 
 export default function Generate() {
-  const { mode } = useCustomTheme();
+  const { mode, colorMode } = useCustomTheme();
   const theme = useTheme();
   const [flashcards, setFlashcards] = useState([]);
   const [setName, setSetName] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [frontText, setFrontText] = useState('');
   const [backText, setBackText] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useUser();
 
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const colorMode = useMemo(
-    () => ({
-      toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-      },
-    }),
-    [],
-  );
 
   const handleOpenDialog = () => setDialogOpen(true);
   const handleCloseDialog = () => setDialogOpen(false);
@@ -51,6 +45,27 @@ export default function Generate() {
     setFlashcards([...flashcards, newFlashcard]);
     setFrontText('');
     setBackText('');
+  };
+
+  const handleAIGenerate = async () => {
+    if (!aiPrompt.trim()) {
+      alert('Please enter a prompt for AI generation.');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await axios.post('/api/ai-generate', { prompt: aiPrompt });
+      const { front, back } = response.data;
+      setFrontText(front);
+      setBackText(back);
+      setAiPrompt('');
+    } catch (error) {
+      console.error('Error generating flashcard:', error);
+      alert('An error occurred while generating the flashcard. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const saveFlashcards = async () => {
@@ -89,37 +104,66 @@ export default function Generate() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <Box sx={{ 
+      backgroundColor: theme.palette.background.default,
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <Navbar>
         <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>
       </Navbar>
-      <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography variant="h4" component="h1" gutterBottom fontWeight="bold" color="text.primary">
+      <Container maxWidth="md" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+          <Typography variant="h4" component="h1" gutterBottom align="center" color="primary" fontWeight="bold">
             Create Flashcards
           </Typography>
+          <Box sx={{ mb: 4 }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="AI Prompt"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              onClick={handleAIGenerate}
+              disabled={isGenerating}
+              sx={{
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                borderRadius: '25px',
+                textTransform: 'none',
+              }}
+            >
+              {isGenerating ? <CircularProgress size={24} /> : 'Generate with AI'}
+            </Button>
+          </Box>
+          <Divider sx={{ my: 4 }} />
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
-                value={frontText}
-                onChange={(e) => setFrontText(e.target.value)}
-                label="Front Text"
                 fullWidth
                 variant="outlined"
-                sx={{ mb: 2 }}
+                label="Front Text"
+                value={frontText}
+                onChange={(e) => setFrontText(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                value={backText}
-                onChange={(e) => setBackText(e.target.value)}
-                label="Back Text"
                 fullWidth
                 variant="outlined"
-                sx={{ mb: 2 }}
+                label="Back Text"
+                value={backText}
+                onChange={(e) => setBackText(e.target.value)}
               />
             </Grid>
           </Grid>
@@ -128,26 +172,49 @@ export default function Generate() {
             color="primary"
             onClick={handleAddFlashcard}
             fullWidth
+            startIcon={<AddIcon />}
             sx={{
+              mt: 3,
               py: 1.5,
               fontSize: '1rem',
               fontWeight: 'bold',
               borderRadius: '25px',
-              boxShadow: '0 4px 6px rgba(93, 78, 123, 0.25)',
-              '&:hover': {
-                boxShadow: '0 6px 8px rgba(93, 78, 123, 0.3)',
-                transform: 'translateY(-2px)',
-              },
+              textTransform: 'none',
             }}
           >
             Add Flashcard
           </Button>
-        </Box>
+        </Paper>
+
         {flashcards.length > 0 && (
           <Box sx={{ mt: 4 }}>
-            <Typography variant="h5" component="h2" gutterBottom fontWeight="bold" color="text.primary">
+            <Typography variant="h5" component="h2" gutterBottom fontWeight="bold" color="primary">
               Preview Flashcards
             </Typography>
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              {flashcards.map((flashcard, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: '15px',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: 6,
+                    },
+                  }}>
+                    <CardContent>
+                      <Typography variant="h6" color="primary">Front:</Typography>
+                      <Typography color="text.secondary" sx={{ mb: 2 }}>{flashcard.front}</Typography>
+                      <Typography variant="h6" color="primary">Back:</Typography>
+                      <Typography color="text.secondary">{flashcard.back}</Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
             <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
               <Button
                 variant="contained"
@@ -159,44 +226,15 @@ export default function Generate() {
                   fontSize: '1rem',
                   fontWeight: 'bold',
                   borderRadius: '25px',
-                  boxShadow: '0 4px 6px rgba(156, 137, 184, 0.25)',
-                  '&:hover': {
-                    boxShadow: '0 6px 8px rgba(156, 137, 184, 0.3)',
-                    transform: 'translateY(-2px)',
-                  },
+                  textTransform: 'none',
                 }}
               >
                 Save Flashcards
               </Button>
             </Box>
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              {flashcards.map((flashcard, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: '20px',
-                    boxShadow: mode === 'light'
-                      ? '0 10px 20px rgba(93, 78, 123, 0.1), 0 6px 6px rgba(93, 78, 123, 0.1)'
-                      : '0 10px 20px rgba(156, 137, 184, 0.1), 0 6px 6px rgba(156, 137, 184, 0.1)',
-                    transition: 'all 0.3s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                    },
-                  }}>
-                    <CardContent>
-                      <Typography variant="h6" color="text.primary">Front:</Typography>
-                      <Typography color="text.secondary">{flashcard.front}</Typography>
-                      <Typography variant="h6" sx={{ mt: 2 }} color="text.primary">Back:</Typography>
-                      <Typography color="text.secondary">{flashcard.back}</Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
           </Box>
         )}
+
         <Dialog open={dialogOpen} onClose={handleCloseDialog}>
           <DialogTitle sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText }}>
             Save Flashcard Set
@@ -224,6 +262,6 @@ export default function Generate() {
           </DialogActions>
         </Dialog>
       </Container>
-    </ThemeProvider>
+    </Box>
   );
 }
