@@ -42,7 +42,7 @@ export default function SignInPage() {
           <SignIn routing="hash" />
           <Box sx={{ textAlign: 'center', marginTop: '1rem' }}>
             <Typography variant="body2">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/sign-up" passHref>
                 <Button color="primary">Sign Up</Button>
               </Link>
