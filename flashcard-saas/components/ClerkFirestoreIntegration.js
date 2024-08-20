@@ -4,6 +4,8 @@ import { useUser } from '@clerk/nextjs';
 import { doc, setDoc } from 'firebase/firestore';
 import db from '../firebase'; // Adjust this import based on your project structure
 
+"use client";
+
 export default function ClerkFirestoreIntegration() {
   const { user } = useUser();
 
